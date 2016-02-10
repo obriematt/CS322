@@ -1,0 +1,21 @@
+static List<IR0.Inst> gen(Ast0.If n) throws Exception {
+    List<IR0.Inst> code = new ArrayList<IR0.Inst>();
+    IR0.Label label1 = new IR0.Label();
+    IR0.Label label2 = new IR0.Label();
+    boolean s2Flag = false;
+
+    if(n.s2 != null)    //determine if s2 is null
+        s2Flag = true;
+    CodePack condExpr = gen(n.cond);  //generate codepack for cond
+    code.addAll(condExpr.code);     //add all code from cond codepack
+    code.add(new IR0.CJump(IR0.ROP.EQ, condExpr.src, new IR0.BoolLit(false), label1)); 
+    code.addAll(gen(n.s1));
+    if(s2Flag)
+        code.add(new IR0.Jump(label2));
+    code.add(new IR0.LabelDec(label1));
+    if(s2Flag){
+        code.addAll(gen(n.s2));
+        code.add(new IR0.LabelDec(label2));
+    }
+    return code;
+  }
