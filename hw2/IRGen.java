@@ -4,6 +4,10 @@
 // For CS322 W'16 (J. Li).
 //
 
+
+// Matthew O'Brien HW2 Compilers Winter 2016
+// Homework completed
+
 // IR code generator for miniJava's AST. (Simplified version)
 //
 // Assumptions:
@@ -441,19 +445,23 @@ public class IRGen {
         IR.Dest left = new IR.Id(((Ast.Id) n.lhs).nm);
         code.add(new IR.Move(left, right.src));
         code.addAll(right.code);
-      }else { // Case 2
+      }else { 
+        // Case 2
         Ast.Field flds = new Ast.Field(Ast.This, ((Ast.Id)n.lhs).nm);
         CodePack cp  = gen(flds.obj, cinfo, env);
         ClassInfo ifs = getClassInfo(flds.obj, cinfo, env);
+        // Offset for Addrs
         int offsets = ifs.fieldOffset(flds.nm);
         IR.Addr addrs = new IR.Addr(cp.src, offsets);
         Ast.Type type = ifs.fieldType(flds.nm);
         IR.Store store = new IR.Store(gen(type), addrs, right.src);
+        // Adding the STORE
         code.addAll(cp.code);
         code.add(store);
         }
     } 
     //Case 3
+    // Last case. Should be similar to the above code. Just not an ID
     else {
       CodePack cp = gen(((Ast.Field) n.lhs).obj, cinfo, env);
       ClassInfo infos = getClassInfo(((Ast.Field) n.lhs).obj, cinfo, env);
@@ -562,16 +570,18 @@ public class IRGen {
     IR.Label label1 = new IR.Label();
     IR.Label label2 = null;
 
-
+    // Not a NULL. New label.
     if(n.s2 != null){
       label2 = new IR.Label();
     }
-
+    
     CodePack cp = gen(n.cond, cinfo, env);
     code.addAll(cp.code);
     code.add(new IR.CJump(IR.ROP.EQ, cp.src, new IR.BoolLit(false), label1));
     code.addAll(gen(n.s1, cinfo, env));
- 
+    
+    // Redundant should condense into one line with above check.
+    // If there is time, going to fix this. Probably won't
     if(n.s2 != null) {
       code.add(new IR.Jump(label2));
     }
@@ -631,16 +641,17 @@ public class IRGen {
     //  ... NEED CODE ...
     List<IR.Inst> code = new ArrayList<IR.Inst>();
     List<IR.Src> args = new ArrayList<IR.Src>();
- 
+    
+    // Printing empty string
     if(n.arg == null) {
       code.add(new IR.Call(new IR.Global("_printStr"), false, args));
     }
-
+    // Printing none empty string
     else if(n.arg instanceof Ast.StrLit) {
       args.add(new IR.StrLit(((Ast.StrLit)n.arg).s));
       code.add(new IR.Call(new IR.Global("_printStr"), false, args));
     }
-
+    // Since both bool and int are actually integers. Last case check.
     else {
       CodePack cp = gen(n.arg, cinfo, env);
       args.add(cp.src);
@@ -729,7 +740,7 @@ public class IRGen {
     IR.Temp temp = new IR.Temp();
     int size = infos.objSize;
 
-  
+    // Using malloc to generate new obj
     if(size != 0){
       args.add(new IR.IntLit(size));
       code.add(new IR.Call(new IR.Global("_malloc"), false, args, temp));
